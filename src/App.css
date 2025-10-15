@@ -1,38 +1,81 @@
-.App {
-  text-align: center;
-}
+/* cssstyle.css */
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
+/* Container for all pages */
+.page-container {
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  align-items: center;
+  background-color: #f9f9f9;
+  padding: 20px;
+}
+
+/* Form wrapper card */
+.form-wrapper {
+  background-color: white;
+  padding: 40px 30px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 400px;
+}
+
+/* Title of the form/page */
+.form-title {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #44c7c7;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Input groups */
+.input-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Labels */
+.input-group label {
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #333;
+}
+
+/* Inputs */
+.input-group input {
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+/* Buttons */
+.button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background-color: #44c7c7;
   color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
-.App-link {
-  color: #61dafb;
+.button-outline {
+  background-color: #fff;
+  color: #44c7c7;
+  border: 2px solid #44c7c7;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Feedback message */
+.message {
+  margin-top: 20px;
+  text-align: center;
+  color: #44c7c7;
+  font-weight: 500;
 }
+
