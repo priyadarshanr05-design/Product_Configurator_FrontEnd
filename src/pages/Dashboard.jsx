@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { FaUserCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -16,8 +16,12 @@ const Dashboard = () => {
       ModelUrl: null,
       PdfUrl: null,
       loading: false,
+      lastChecked: Date.now(),
     }))
   );
+
+  // 🔒 Use ref to store polling interval duration for exponential backoff
+  const pollingDelayRef = useRef(3000);
 
   const handleLogout = () => navigate("/login");
 
@@ -27,41 +31,79 @@ const Dashboard = () => {
     return s === "completed" || s === "failed";
   };
 
-  // 🔁 Poll backend for ALL requests with a valid RequestId
+  // 🧠 Polling Effect — uses exponential backoff to reduce load
   useEffect(() => {
-    const interval = setInterval(async () => {
-      for (let i = 0; i < requests.length; i++) {
-        const req = requests[i];
-        if (!req.RequestId || isFinalStatus(req.Status)) continue;
+  let isMounted = true;
 
-        try {
-          const res = await axios.get(
-            `https://localhost:7201/api/RequestModelStatus/status/${req.RequestId}`
-          );
-          const data = res.data;
+  const poll = async () => {
+    try {
+      // Get the latest state safely
+      setRequests((prevRequests) => {
+        // Create a shallow copy to mutate inside async
+        const current = [...prevRequests];
 
-          setRequests((prev) => {
-            const updated = [...prev];
-            updated[i] = {
-              ...updated[i],
-              Status: data.status ?? data.Status,
-              ModelUrl: data.modelUrl ?? data.ModelUrl,
-              PdfUrl: data.pdfUrl ?? data.PdfUrl,
-              loading: !isFinalStatus(data.status ?? data.Status),
-            };
-            return updated;
-          });
-        } catch (err) {
-          console.error(`Polling error for ${req.RequestId}:`, err);
-        }
-      }
-    }, 3000);
+        current.forEach(async (req, i) => {
+          if (!req.RequestId || isFinalStatus(req.Status)) return;
 
-    return () => clearInterval(interval);
-  }, [requests]);
+          try {
+            const res = await axios.get(
+              `https://localhost:7201/api/RequestModelStatus/status/${req.RequestId}`
+            );
+
+            const data = res.data;
+            const newStatus = data.status ?? data.Status;
+            const nextLoading = !isFinalStatus(newStatus);
+
+            if (!isMounted) return;
+
+            setRequests((prev) => {
+              const updated = [...prev];
+              updated[i] = {
+                ...updated[i],
+                Status: newStatus,
+                ModelUrl: data.modelUrl ?? updated[i].ModelUrl,
+                PdfUrl: data.pdfUrl ?? updated[i].PdfUrl,
+                loading: nextLoading,
+                lastChecked: Date.now(),
+              };
+              return updated;
+            });
+          } catch (err) {
+            console.error(`Polling error for ${req.RequestId}:`, err);
+          }
+        });
+
+        return current;
+      });
+    } catch (err) {
+      console.error("Polling loop error:", err);
+    }
+
+    // Exponential backoff logic
+    const hasActive = requests.some(
+      (r) => !isFinalStatus(r.Status) && r.RequestId
+    );
+    if (hasActive) {
+      pollingDelayRef.current = Math.min(pollingDelayRef.current * 1.25, 15000);
+    } else {
+      pollingDelayRef.current = 3000;
+    }
+
+    if (isMounted) {
+      setTimeout(poll, pollingDelayRef.current);
+    }
+  };
+
+  poll();
+
+  return () => {
+    isMounted = false;
+  };
+}, []);
 
   // ▶️ Submit a single new request
   const submitRequest = async (reqIndex) => {
+    // 1️⃣ Set request to Queued immediately
     setRequests((prev) => {
       const updated = [...prev];
       updated[reqIndex] = {
@@ -76,6 +118,7 @@ const Dashboard = () => {
     });
 
     try {
+      // 2️⃣ Call backend
       const response = await axios.post(
         "https://localhost:7201/api/RequestModelStatus",
         requests[reqIndex].requestBody
@@ -83,12 +126,13 @@ const Dashboard = () => {
 
       const { requestId, status } = response.data;
 
+      // 3️⃣ Update state with RequestId and initial status
       setRequests((prev) => {
         const updated = [...prev];
         updated[reqIndex] = {
           ...updated[reqIndex],
           RequestId: requestId,
-          Status: status,
+          Status: status ?? "Queued",
           loading: true,
         };
         return updated;
@@ -97,7 +141,11 @@ const Dashboard = () => {
       console.error("Failed to submit request:", err);
       setRequests((prev) => {
         const updated = [...prev];
-        updated[reqIndex] = { ...updated[reqIndex], Status: "Failed", loading: false };
+        updated[reqIndex] = {
+          ...updated[reqIndex],
+          Status: "Failed",
+          loading: false,
+        };
         return updated;
       });
     }
@@ -123,56 +171,78 @@ const Dashboard = () => {
             gap: "15px",
           }}
         >
-          {requests.map((req, index) => (
-            <div
-              key={index}
-              style={{
-                padding: "15px",
-                backgroundColor: "#eef",
-                border: "1px solid #99c",
-                borderRadius: "6px",
-              }}
-            >
-              <h4>{req.requestBody.PartId}</h4>
-              <p>
-                <strong>Status:</strong> {req.Status}
-              </p>
+          {requests.map((req, index) => {
+            const statusColor =
+              req.Status === "Completed"
+                ? "#4caf50"
+                : req.Status === "Failed"
+                ? "#f44336"
+                : req.Status === "Queued"
+                ? "#ff9800"
+                : "#3f51b5";
 
-              <button
-                onClick={() => submitRequest(index)}
-                disabled={req.loading || ["Processing", "Queued"].includes(req.Status)}
-                style={{ marginBottom: "10px" }}
+            return (
+              <div
+                key={index}
+                style={{
+                  padding: "15px",
+                  backgroundColor: "#f9f9ff",
+                  border: `2px solid ${statusColor}`,
+                  borderRadius: "8px",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                  transition: "transform 0.2s ease-in-out",
+                }}
               >
-                {req.loading ? "Processing..." : "Load Model"}
-              </button>
-
-              {req.ModelUrl && (
+                <h4>{req.requestBody.PartId}</h4>
                 <p>
-                  <strong>Download Model:</strong>{" "}
-                  <a
-                    href={req.ModelUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Click here
-                  </a>
+                  <strong>Status:</strong>{" "}
+                  <span style={{ color: statusColor }}>{req.Status}</span>
                 </p>
-              )}
 
-              {req.PdfUrl && (
-                <p>
-                  <strong>Download PDF:</strong>{" "}
-                  <a
-                    href={req.PdfUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Click here
-                  </a>
-                </p>
-              )}
-            </div>
-          ))}
+                <button
+                  onClick={() => submitRequest(index)}
+                  disabled={req.loading || ["Processing", "Queued"].includes(req.Status)}
+                  style={{
+                    marginBottom: "10px",
+                    backgroundColor: req.loading ? "#ccc" : "#007bff",
+                    color: "white",
+                    border: "none",
+                    padding: "8px 12px",
+                    borderRadius: "4px",
+                    cursor: req.loading ? "not-allowed" : "pointer",
+                  }}
+                >
+                  {req.loading ? "Processing..." : "Load Model"}
+                </button>
+
+                {req.ModelUrl && (
+                  <p>
+                    <strong>Download Model:</strong>{" "}
+                    <a
+                      href={req.ModelUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Click here
+                    </a>
+                  </p>
+                )}
+
+                {req.PdfUrl && (
+                  <p>
+                    <strong>Download PDF:</strong>{" "}
+                    <a
+                      href={req.PdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Click here
+                    </a>
+                  </p>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
