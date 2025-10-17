@@ -15,6 +15,8 @@ const Dashboard = () => {
       Status: "Not Started",
       ModelUrl: null,
       PdfUrl: null,
+      ApiStatus: null,      // NEW: API status text
+      ApiResponse: null,    // NEW: full API response JSON
       loading: false,
       lastChecked: Date.now(),
     }))
@@ -63,6 +65,8 @@ const Dashboard = () => {
                 Status: newStatus,
                 ModelUrl: data.modelUrl ?? updated[i].ModelUrl,
                 PdfUrl: data.pdfUrl ?? updated[i].PdfUrl,
+                ApiStatus: data.ApiStatus ?? updated[i].ApiStatus,     // update API status
+                ApiResponse: JSON.stringify(data, null, 2),        // store full response as string
                 loading: nextLoading,
                 lastChecked: Date.now(),
               };
@@ -240,6 +244,19 @@ const Dashboard = () => {
                     </a>
                   </p>
                 )}
+
+                {req.ApiStatus && (
+  <p>
+    <strong>API Status:</strong> {req.ApiStatus}
+  </p>
+)}
+
+{req.ApiResponse && (
+  <details style={{ maxHeight: "200px", overflow: "auto" }}>
+    <summary>Full API Response</summary>
+    <pre>{req.ApiResponse}</pre>
+  </details>
+)}
               </div>
             );
           })}

@@ -1,5 +1,5 @@
 const postBodies = [
-  {
+  /*{
     PartId: "MIS 17",
     DomainName: "motor",
     OutputFormat: "GLTF",
@@ -9,6 +9,82 @@ const postBodies = [
       { Name: "C_SHAFT", Value: "Ø 6.35x20; Shaft: IP65 Sealing, Motor: IP65 Painted", ParamType: "String", IsMandatory: true },
       { Name: "CONNECTION", Value: "Profinet", ParamType: "String", IsMandatory: true },
       { Name: "ENCODER", Value: "Absolute multiturn encoder and magnetic encoder. Closed loop.", ParamType: "String", IsMandatory: true },
+      { Name: "supply", Value: "SMC66 Controller, Coated PCB with STO", ParamType: "String", IsMandatory: true }
+    ],
+    IsDebugMode: false,
+    IsVersion2: true
+  },*/
+
+  {
+    PartId: "MIS 17",
+    DomainName: "motor",
+    OutputFormat: "PDF",
+    PartNumber: "",
+    Parameters: [
+      { Name: "SIZE", Value: "MIS173S (0.40Nm) - Radial Connector", ParamType: "String", IsMandatory: true },
+      { Name: "C_SHAFT", Value: "Ø 6.35x20; Shaft: IP65 Sealing, Motor: IP65 Painted", ParamType: "String", IsMandatory: true },
+      { Name: "CONNECTION", Value: "Profinet", ParamType: "String", IsMandatory: true },
+      { Name: "ENCODER", Value: "Absolute multiturn encoder and magnetic encoder. Closed loop.22", ParamType: "String", IsMandatory: true },
+      { Name: "supply", Value: "SMC66 Controller, Coated PCB with STO", ParamType: "String", IsMandatory: true }
+    ],
+    IsDebugMode: false,
+    IsVersion2: true
+  },
+ {
+    PartId: "MIS 17",
+    DomainName: "motor",
+    OutputFormat: "PDF",
+    PartNumber: "",
+    Parameters: [
+      { Name: "SIZE", Value: "MIS173S (0.40Nm) - Radial Connector", ParamType: "String", IsMandatory: true },
+      { Name: "C_SHAFT", Value: "Ø 6.35x20; Shaft: IP65 Sealing, Motor: IP65 Painted", ParamType: "String", IsMandatory: true },
+      { Name: "CONNECTION", Value: "Profinet", ParamType: "String", IsMandatory: true },
+      { Name: "ENCODER", Value: "Absolute multiturn encoder and magnetic encoder. Closed loop.23", ParamType: "String", IsMandatory: true },
+      { Name: "supply", Value: "SMC66 Controller, Coated PCB with STO", ParamType: "String", IsMandatory: true }
+    ],
+    IsDebugMode: false,
+    IsVersion2: true
+  },
+   {
+    PartId: "MIS 17",
+    DomainName: "motor",
+    OutputFormat: "PDF",
+    PartNumber: "",
+    Parameters: [
+      { Name: "SIZE", Value: "MIS173S (0.40Nm) - Radial Connector", ParamType: "String", IsMandatory: true },
+      { Name: "C_SHAFT", Value: "Ø 6.35x20; Shaft: IP65 Sealing, Motor: IP65 Painted", ParamType: "String", IsMandatory: true },
+      { Name: "CONNECTION", Value: "Profinet", ParamType: "String", IsMandatory: true },
+      { Name: "ENCODER", Value: "Absolute multiturn encoder and magnetic encoder. Closed loop.24", ParamType: "String", IsMandatory: true },
+      { Name: "supply", Value: "SMC66 Controller, Coated PCB with STO", ParamType: "String", IsMandatory: true }
+    ],
+    IsDebugMode: false,
+    IsVersion2: true
+  },
+   {
+    PartId: "MIS 17",
+    DomainName: "motor",
+    OutputFormat: "PDF",
+    PartNumber: "",
+    Parameters: [
+      { Name: "SIZE", Value: "MIS173S (0.40Nm) - Radial Connector", ParamType: "String", IsMandatory: true },
+      { Name: "C_SHAFT", Value: "Ø 6.35x20; Shaft: IP65 Sealing, Motor: IP65 Painted", ParamType: "String", IsMandatory: true },
+      { Name: "CONNECTION", Value: "Profinet", ParamType: "String", IsMandatory: true },
+      { Name: "ENCODER", Value: "Absolute multiturn encoder and magnetic encoder. Closed loop.25", ParamType: "String", IsMandatory: true },
+      { Name: "supply", Value: "SMC66 Controller, Coated PCB with STO", ParamType: "String", IsMandatory: true }
+    ],
+    IsDebugMode: false,
+    IsVersion2: true
+  },
+   {
+    PartId: "MIS 17",
+    DomainName: "motor",
+    OutputFormat: "PDF",
+    PartNumber: "",
+    Parameters: [
+      { Name: "SIZE", Value: "MIS173S (0.40Nm) - Radial Connector", ParamType: "String", IsMandatory: true },
+      { Name: "C_SHAFT", Value: "Ø 6.35x20; Shaft: IP65 Sealing, Motor: IP65 Painted", ParamType: "String", IsMandatory: true },
+      { Name: "CONNECTION", Value: "Profinet", ParamType: "String", IsMandatory: true },
+      { Name: "ENCODER", Value: "Absolute multiturn encoder and magnetic encoder. Closed loop.26", ParamType: "String", IsMandatory: true },
       { Name: "supply", Value: "SMC66 Controller, Coated PCB with STO", ParamType: "String", IsMandatory: true }
     ],
     IsDebugMode: false,
@@ -23,12 +99,16 @@ const postBodies = [
       { Name: "SIZE", Value: "MIS173S (0.40Nm) - Radial Connector", ParamType: "String", IsMandatory: true },
       { Name: "C_SHAFT", Value: "Ø 6.35x20; Shaft: IP65 Sealing, Motor: IP65 Painted", ParamType: "String", IsMandatory: true },
       { Name: "CONNECTION", Value: "Profinet", ParamType: "String", IsMandatory: true },
-      { Name: "ENCODER", Value: "Absolute multiturn encoder and magnetic encoder. Closed loop.", ParamType: "String", IsMandatory: true },
+      { Name: "ENCODER", Value: "Absolute multiturn encoder and magnetic encoder. Closed loop.27", ParamType: "String", IsMandatory: true },
       { Name: "supply", Value: "SMC66 Controller, Coated PCB with STO", ParamType: "String", IsMandatory: true }
     ],
     IsDebugMode: false,
     IsVersion2: true
   },
+
+
+
+/*
   {
     PartId: "SPROCKET",
     DomainName: "motor",
@@ -250,7 +330,8 @@ const postBodies = [
     ],
     IsDebugMode: false,
     IsVersion2: true
-  }
+  }*/
+
 ];
 
 export default postBodies;
