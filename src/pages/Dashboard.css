@@ -1,31 +1,15 @@
-/* Dashboard container */
+/* Dashboard container - full width top-to-bottom layout */
 .dashboard-container {
   display: flex;
+  flex-direction: column; /* stack elements vertically */
   height: 100vh;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f9f9f9;
 }
 
-/* Sidebar (always expanded) */
-.sidebar {
-  width: 200px; /* fixed width */
-  background-color: #44c7c7; /* primary color */
-  color: white;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  transition: none; /* remove width animation */
-}
-
-.sidebar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px;
-}
-
+/* Hide pin button */
 .pin-btn {
-  display: none; /* hide pin button */
+  display: none; 
   background: none;
   border: none;
   color: white;
@@ -33,41 +17,39 @@
   font-size: 1.2rem;
 }
 
-.sidebar-nav {
-  display: flex;
-  flex-direction: column;
-  margin-top: 20px;
-}
-
+/* Navigation links (if any) */
 .nav-link {
   padding: 12px 20px;
   color: white;
   text-decoration: none;
-  transition: background 0.3s; /* only hover effect */
+  transition: background 0.3s; 
   border-radius: 6px;
 }
 
 .nav-link:hover {
-  background-color: #a3e1e1; /* lighter variant of primary */
-  padding-left: 20px; /* keep consistent, no shifting */
+  background-color: #a3e1e1; 
+  padding-left: 20px; 
 }
 
 /* Main Content */
 .main-content {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: #f9f9f9; /* same as page background */
+  background-color: #f9f9f9;
+  flex: 1; /* take remaining height */
+  padding: 20px;
 }
 
-/* Header */
+/* Header - now full width at the top */
 .dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 15px 25px;
-  background-color: #44c7c7; /* primary color */
+  background-color: #44c7c7; 
   color: white;
+  width: 100%; /* full width */
+  box-sizing: border-box;
 }
 
 .logo {
@@ -87,7 +69,7 @@
 
 .logout-btn {
   background-color: white;
-  color: #44c7c7; /* primary color for text */
+  color: #44c7c7; 
   border: 2px solid #44c7c7;
   padding: 6px 12px;
   border-radius: 8px;
@@ -101,7 +83,10 @@
   color: white;
 }
 
-/* Body */
+/* Body content under header */
 .dashboard-body {
+  flex: 1;
   padding: 20px;
+  width: 100%; /* full width */
+  box-sizing: border-box;
 }

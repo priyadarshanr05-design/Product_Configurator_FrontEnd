@@ -1,62 +1,112 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls, useGLTF } from "@react-three/drei";
 import { FaUserCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import postBodies from "../pages/RequestModel_PostBodies";
 import "../pages/Dashboard.css";
-
-const ModelViewer = ({ modelUrl }) => {
-  const { scene } = useGLTF(modelUrl); // load GLTF/GLB model
-  return <primitive object={scene} scale={1} />;
-};
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [modelUrl, setModelUrl] = useState(null);
-  const [loading, setLoading] = useState(false);
 
-  const handleLogout = () => {
-    navigate("/login");
+  const [requests, setRequests] = useState(
+    postBodies.map((body) => ({
+      requestBody: body,
+      RequestId: null,
+      Status: "Not Started",
+      ModelUrl: null,
+      PdfUrl: null,
+      loading: false,
+    }))
+  );
+
+  const handleLogout = () => navigate("/login");
+
+  const isFinalStatus = (status) => {
+    if (!status) return false;
+    const s = status.toLowerCase();
+    return s === "completed" || s === "failed";
   };
 
-  const handleSubmit = async () => {
-    setLoading(true);
+  // 🔁 Poll backend for ALL requests with a valid RequestId
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      for (let i = 0; i < requests.length; i++) {
+        const req = requests[i];
+        if (!req.RequestId || isFinalStatus(req.Status)) continue;
 
-    const postBody = {
-      PartId: "MIS 17",
-      DomainName: "motor",
-      OutputFormat: "glb", // request 3D model
-      PartNumber: "",
-      Parameters: [
-        { Name: "SIZE", Value: "MIS173S (0.40Nm) - Radial Connector", ParamType: "String", IsMandatory: true },
-        { Name: "C_SHAFT", Value: "Ø 6.35x20; Shaft: IP65 Sealing, Motor: IP65 Painted", ParamType: "String", IsMandatory: true },
-        { Name: "CONNECTION", Value: "Profinet", ParamType: "String", IsMandatory: true },
-        { Name: "ENCODER", Value: "Absolute multiturn encoder and magnetic encoder. Closed loop.", ParamType: "String", IsMandatory: true },
-        { Name: "supply", Value: "SMC66 Controller, Coated PCB with STO", ParamType: "String", IsMandatory: true }
-      ],
-      IsDebugMode: false,
-      IsVersion2: true
-    };
+        try {
+          const res = await axios.get(
+            `https://localhost:7201/api/RequestModelStatus/status/${req.RequestId}`
+          );
+          const data = res.data;
+
+          setRequests((prev) => {
+            const updated = [...prev];
+            updated[i] = {
+              ...updated[i],
+              Status: data.status ?? data.Status,
+              ModelUrl: data.modelUrl ?? data.ModelUrl,
+              PdfUrl: data.pdfUrl ?? data.PdfUrl,
+              loading: !isFinalStatus(data.status ?? data.Status),
+            };
+            return updated;
+          });
+        } catch (err) {
+          console.error(`Polling error for ${req.RequestId}:`, err);
+        }
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [requests]);
+
+  // ▶️ Submit a single new request
+  const submitRequest = async (reqIndex) => {
+    setRequests((prev) => {
+      const updated = [...prev];
+      updated[reqIndex] = {
+        ...updated[reqIndex],
+        Status: "Queued",
+        loading: true,
+        RequestId: null,
+        ModelUrl: null,
+        PdfUrl: null,
+      };
+      return updated;
+    });
 
     try {
-      const response = await axios.post("https://localhost:7201/api/ExternalModel", postBody);
-      console.log("API Response:", response.data);
+      const response = await axios.post(
+        "https://localhost:7201/api/RequestModelStatus",
+        requests[reqIndex].requestBody
+      );
 
-      // Assuming the API returns { modelUrl: "https://..." }
-      setModelUrl(response.data.modelUrl);
+      const { requestId, status } = response.data;
+
+      setRequests((prev) => {
+        const updated = [...prev];
+        updated[reqIndex] = {
+          ...updated[reqIndex],
+          RequestId: requestId,
+          Status: status,
+          loading: true,
+        };
+        return updated;
+      });
     } catch (err) {
-      console.error("Error fetching model:", err);
-      alert("Failed to load model.");
-    } finally {
-      setLoading(false);
+      console.error("Failed to submit request:", err);
+      setRequests((prev) => {
+        const updated = [...prev];
+        updated[reqIndex] = { ...updated[reqIndex], Status: "Failed", loading: false };
+        return updated;
+      });
     }
   };
 
   return (
     <div className="dashboard-container">
       <header className="dashboard-header">
-        <h1 className="logo">Model Request</h1>
+        <h1 className="logo">Model Requests</h1>
         <div className="profile-menu">
           <FaUserCircle size={30} />
           <button onClick={handleLogout}>Logout</button>
@@ -64,25 +114,66 @@ const Dashboard = () => {
       </header>
 
       <div className="dashboard-body">
-        <h2>Welcome to the Dashboard</h2>
+        <div
+          className="requests-grid"
+          style={{
+            marginTop: "20px",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+            gap: "15px",
+          }}
+        >
+          {requests.map((req, index) => (
+            <div
+              key={index}
+              style={{
+                padding: "15px",
+                backgroundColor: "#eef",
+                border: "1px solid #99c",
+                borderRadius: "6px",
+              }}
+            >
+              <h4>{req.requestBody.PartId}</h4>
+              <p>
+                <strong>Status:</strong> {req.Status}
+              </p>
 
-        <button onClick={handleSubmit} disabled={loading}>
-          {loading ? "Loading..." : "Load 3D Model"}
-        </button>
+              <button
+                onClick={() => submitRequest(index)}
+                disabled={req.loading || ["Processing", "Queued"].includes(req.Status)}
+                style={{ marginBottom: "10px" }}
+              >
+                {req.loading ? "Processing..." : "Load Model"}
+              </button>
 
-        {modelUrl && (
-          <div style={{ height: "400px", width: "600px", border: "1px solid #ccc", marginTop: "20px" }}>
-            <Canvas camera={{ position: [0, 0, 5] }}>
-              <ambientLight />
-              <pointLight position={[10, 10, 10]} />
-              <ModelViewer modelUrl={modelUrl} />
-              <OrbitControls />
-            </Canvas>
-            <a href={modelUrl} download style={{ marginTop: "10px", display: "inline-block" }}>
-              Download Model
-            </a>
-          </div>
-        )}
+              {req.ModelUrl && (
+                <p>
+                  <strong>Download Model:</strong>{" "}
+                  <a
+                    href={req.ModelUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Click here
+                  </a>
+                </p>
+              )}
+
+              {req.PdfUrl && (
+                <p>
+                  <strong>Download PDF:</strong>{" "}
+                  <a
+                    href={req.PdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Click here
+                  </a>
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
